@@ -8,5 +8,4 @@ class saltstack::minion::install inherits saltstack::minion {
       ensure => $saltstack::package_ensure,
     }
   }
-
 }
