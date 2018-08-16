@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.1.6
+
+* **salt::cloud**:
+  - bugfix log_datefmt
+  - flag to manage vSphere dependencies (true by default)
+* **salt::api**:
+  - added **saltstack::api::rest_timeout** (default: 7200)
+* **salt::master**:
+  - added keys management
+  - acl management for salt-master via eAuth
+
 ## 0.1.5
 
 * added Ubuntu 18.04 support

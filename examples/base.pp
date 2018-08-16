@@ -17,3 +17,15 @@ class { 'saltstack::cloud': }
 class { 'saltstack::api': }
 
 class { 'saltstack::syndic': }
+
+saltstack::master::key { $::fqdn:
+  status => 'accepted'
+}
+
+saltstack::master::acl { 'saltuser':
+  match => [ '.*', '@runner' ],
+}
+
+saltstack::master::acl { 'saltuser2':
+  match => [ '.*', '@runner' ],
+}
