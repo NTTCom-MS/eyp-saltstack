@@ -9,6 +9,8 @@ define saltstack::master::key (
                               ) {
   include ::saltstack::master
 
+  Class['::saltstack::master'] -> Saltstack::Master::Key <| |>
+
   $current_status = salt_key_status($hostname)
 
   case $status
@@ -25,6 +27,8 @@ define saltstack::master::key (
             path    => '/usr/sbin:/usr/bin:/sbin:/bin',
           }
         }
+        # no-op
+        '': { }
         default: { fail("ERROR: current status set as '${current_status}' - desired state: ${status}")}
       }
     }
@@ -40,6 +44,8 @@ define saltstack::master::key (
           }
         }
         /^minions_rejected$/: { }
+        # no-op
+        '': { }
         default: { fail("ERROR: current status set as '${current_status}' - desired state: ${status}")}
       }
     }
