@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.1.13
+
+* bugfix SaltStack 2018.3
+
+## 0.1.12
+
+* added SaltStack 2018.3
+
 ## 0.1.11
 
 * added deleted state for salt keys
