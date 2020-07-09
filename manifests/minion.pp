@@ -11,15 +11,15 @@ class saltstack::minion (
                           $service_ensure        = 'running',
                           $service_enable        = true,
                           $manage_config         = true,
-                          $minion_id             = $::fqdn,
+                          $minion_id             = $facts['networking']['fqdn'],
                           $hash_type             = 'sha256',
                         ) inherits saltstack::params{
 
   # master_type Can be str, failover, func or disable.
 
-  class { '::saltstack::minion::install': } ->
-  class { '::saltstack::minion::config': } ~>
-  class { '::saltstack::minion::service': } ->
-  Class['::saltstack::minion']
+  class { 'saltstack::minion::install': } ->
+  class { 'saltstack::minion::config': } ~>
+  class { 'saltstack::minion::service': } ->
+  Class['saltstack::minion']
 
 }

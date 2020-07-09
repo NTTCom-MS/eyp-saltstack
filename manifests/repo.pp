@@ -1,111 +1,97 @@
 class saltstack::repo (
-                        $srcdir        = '/usr/local/src',
-                        $version       = 'latest',
-                        $version_minor = undef,
-                        $protocol      = 'https',
+                        $srcdir         = '/usr/local/src',
+                        $version        = 'latest',
+                        $version_minor  = undef,
+                        $protocol       = 'https',
+                        $python_version = undef,
                       ) inherits saltstack::params {
 
   Exec {
     path => '/usr/sbin:/usr/bin:/sbin:/bin',
   }
 
-  if($saltstack::params::saltstack_repo_url[$version]==undef)
+
+  if($version_minor!=undef)
   {
-    fail("unsupported version: ${version}")
+    $composite_version = "archive/${version}.${version_minor}"
+  }
+  else
+  {
+    $composite_version = $version
   }
 
-  #TODO:
-  # ubuntu: https://repo.saltstack.com/#ubuntu
-  case $::osfamily
+  if($python_version==undef)
   {
-    'redhat':
-    {
-      if($version_minor!=undef)
+      if ($version == 'latest')
       {
-        # https://docs.saltstack.com/en/latest/topics/installation/rhel.html
-        #
-        # [saltstack-repo]
-        # name=SaltStack repo for Red Hat Enterprise Linux $releasever
-        # baseurl=https://repo.saltstack.com/yum/redhat/$releasever/$basearch/latest
-        # enabled=1
-        # gpgcheck=1
-        # gpgkey=https://repo.saltstack.com/yum/redhat/$releasever/$basearch/latest/SALTSTACK-GPG-KEY.pub
-        #        https://repo.saltstack.com/yum/redhat/$releasever/$basearch/latest/base/RPM-GPG-KEY-CentOS-7
-
-        yumrepo { 'saltstack-repo':
-          baseurl  => "${protocol}://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/archive/${version}.${version_minor}",
-          descr    => "SaltStack repo for Red Hat Enterprise Linux - ${version}.${version_minor}",
-          enabled  => '1',
-          gpgcheck => '1',
-          gpgkey   => "${protocol}://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/latest/SALTSTACK-GPG-KEY.pub ${protocol}://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/latest/base/RPM-GPG-KEY-CentOS-7",
-        }
+        $base_yum_repo = 'py3'
+      }
+      elsif versioncmp($version, '3000') > 0
+      {
+        $base_yum_repo = 'py3'
       }
       else
       {
-        exec { 'which wget eyp-saltstack':
-          command => 'which wget',
-          unless  => 'which wget',
-        }
+        $base_yum_repo = $saltstack::params::base_repo
+      }
+  }
+  else
+  {
+    case $python_version
+    {
+      2:
+      {
+        $base_yum_repo = $saltstack::params::python2_base_repo
+      }
+      3:
+      {
+        $base_yum_repo = 'py3'
+      }
+      default:
+      {
+        fail("Unsupported python version; python_version can be either 2 or 3 - not ${python_version}")
+      }
+    }
+  }
 
-        exec { "mkdir p eyp-saltstack ${srcdir}":
-          command => "mkdir -p ${srcdir}",
-          creates => $srcdir,
-        }
+  case $facts['os']['family']
+  {
+    'redhat':
+    {
+      # [saltstack-repo]
+      # name=SaltStack repo for RHEL/CentOS 7
+      # baseurl=https://repo.saltstack.com/yum/redhat/7/$basearch/archive/3000.3
+      # enabled=1
+      # gpgcheck=1
+      # gpgkey=https://repo.saltstack.com/yum/redhat/7/$basearch/archive/3000.3/SALTSTACK-GPG-KEY.pub
 
-        download { 'wget saltstack repo':
-          url     => "${protocol}${saltstack::params::saltstack_repo_url[$version]}",
-          creates => "${srcdir}/saltstack_repo.${saltstack::params::package_provider}",
-          require => Exec[ "mkdir p eyp-saltstack ${srcdir}", 'which wget eyp-saltstack' ],
-        }
-
-        package { $saltstack::params::saltstack_repo_name:
-          ensure   => 'installed',
-          provider => $saltstack::params::package_provider,
-          source   => "${srcdir}/saltstack_repo.${saltstack::params::package_provider}",
-          require  => Download['wget saltstack repo'],
-        }
+      yumrepo { 'saltstack-repo':
+        baseurl  => "${protocol}://repo.saltstack.com/${base_yum_repo}/redhat/\$releasever/\$basearch/${composite_version}",
+        descr    => "SaltStack repo - ${version} ${version_minor}",
+        enabled  => '1',
+        gpgcheck => '1',
+        gpgkey   => "${protocol}://repo.saltstack.com/yum/redhat/\$releasever/\$basearch/${composite_version}/SALTSTACK-GPG-KEY.pub",
       }
     }
     'Debian':
     {
-      if($version_minor!=undef)
-      {
-        fail('version_minor is unsupported on this OS')
-      }
+      # Run the following command to import the SaltStack repository key:
+      # wget -O - https://repo.saltstack.com/apt/ubuntu/18.04/amd64/3000/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
+      # Save the following file to /etc/apt/sources.list.d/saltstack.list:
+      # deb http://repo.saltstack.com/apt/ubuntu/18.04/amd64/3000 bionic main
 
       apt::key { 'SALTSTACK-GPG-KEY':
-        key        => $saltstack::params::saltstack_repo_url_key,
-        key_source => "${protocol}${saltstack::params::saltstack_repo_url_key_source[$version]}",
+        key        => 'C7A3D3EE96D9220BAE9420246DF2C88E747F3421',
+        key_source => "${protocol}://repo.saltstack.com/${base_yum_repo}/${saltstack::params::repo_path}/amd64/${composite_version}/SALTSTACK-GPG-KEY.pub",
       }
 
       # deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main
       apt::source { 'saltstack':
-        location => "${protocol}${saltstack::params::saltstack_repo_url[$version]}",
-        release  => $::lsbdistcodename,
+        location => "${protocol}://repo.saltstack.com/${base_yum_repo}/${saltstack::params::repo_path}/amd64/${composite_version}",
+        release  => $facts['os']['distro']['codename'],
         repos    => 'main',
         require  => Apt::Key['SALTSTACK-GPG-KEY'],
       }
-    }
-    'Suse':
-    {
-      if($version_minor!=undef)
-      {
-        fail('version_minor is unsupported on this OS')
-      }
-
-      # https://repo.saltstack.com/index.html#suse
-
-      exec { 'zypper addrepo':
-        command => "zypper addrepo -G ${protocol}${saltstack::params::saltstack_repo_url[$version]}",
-        unless  => "zypper lr | grep ${saltstack::params::saltstack_repo_name}",
-        notify  => Exec['zypper refresh'],
-      }
-
-      exec { 'zypper refresh':
-        command     => 'zypper refresh',
-        refreshonly => true,
-      }
-
     }
     default:
     {

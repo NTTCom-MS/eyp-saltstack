@@ -17,7 +17,7 @@ class saltstack::params {
   $ssh_package_name = 'salt-ssh'
 
 
-  case $::osfamily
+  case $facts['os']['family']
   {
     'redhat':
     {
@@ -25,53 +25,30 @@ class saltstack::params {
       $saltstack_repo_name='salt-repo'
       $saltstack_repo_url_key=undef
 
-      case $::operatingsystemrelease
+      $python2_base_repo = 'yum'
+      $repo_path = undef
+
+      case $facts['os']['release']['full']
       {
-        /^5.*$/:
+        /^[56].*$/:
         {
           $api_dependencies=undef
-          $saltstack_repo_url_key_source=undef
-          $saltstack_repo_url = {
-                                  'latest' => '://repo.saltstack.com/yum/redhat/salt-repo-latest-1.el5.noarch.rpm',
-                                  '2015.5' => '://repo.saltstack.com/yum/redhat/salt-repo-2015.5-1.el5.noarch.rpm',
-                                  '2015.8' => '://repo.saltstack.com/yum/redhat/salt-repo-2015.8-3.el5.noarch.rpm',
-                                  '2016.11' => '://repo.saltstack.com/yum/redhat/salt-repo-2016.11-1.el5.noarch.rpm',
-                                  '2016.3' => '://repo.saltstack.com/yum/redhat/salt-repo-2016.3-1.el5.noarch.rpm',
-                                }
-
           $windows_dependencies=undef
-        }
-        /^6.*$/:
-        {
-          $api_dependencies=undef
-          $saltstack_repo_url_key_source=undef
-          $saltstack_repo_url = {
-                                  'latest' => '://repo.saltstack.com/yum/redhat/salt-repo-latest-2.el6.noarch.rpm',
-                                  '2018.3' => '://repo.saltstack.com/yum/redhat/salt-repo-2018.3-1.el6.noarch.rpm',
-                                  '2017.7' => '://repo.saltstack.com/yum/redhat/salt-repo-2017.7-1.el6.noarch.rpm',
-                                  '2016.11' => '://repo.saltstack.com/yum/redhat/salt-repo-2016.11-2.el6.noarch.rpm',
-                                  '2016.3' => '://repo.saltstack.com/yum/redhat/salt-repo-2016.3-2.el6.noarch.rpm',
-                                  '2019.2' => '://repo.saltstack.com/yum/redhat/salt-repo-2019.2.el6.noarch.rpm',
-                                }
-
-          $windows_dependencies=undef
+          $base_repo = 'yum'
         }
         /^7.*$/:
         {
           $api_dependencies=['pyOpenSSL']
-          $saltstack_repo_url_key_source=undef
-          $saltstack_repo_url = {
-                                  'latest' => '://repo.saltstack.com/yum/redhat/salt-repo-latest-2.el7.noarch.rpm',
-                                  '2018.3' => '://repo.saltstack.com/yum/redhat/salt-repo-2018.3-1.el7.noarch.rpm',
-                                  '2017.7' => '://repo.saltstack.com/yum/redhat/salt-repo-2017.7-1.el7.noarch.rpm',
-                                  '2016.11' => '://repo.saltstack.com/yum/redhat/salt-repo-2016.11-2.el7.noarch.rpm',
-                                  '2016.3' => '://repo.saltstack.com/yum/redhat/salt-repo-2016.3-2.el7.noarch.rpm',
-                                  '2019.2' => '://repo.saltstack.com/yum/redhat/salt-repo-2019.2.el7.noarch.rpm',
-                                }
-
           $windows_dependencies=[ 'python2-impacket', 'python2-winrm' ]
+          $base_repo = 'yum'
         }
-        default: { fail("Unsupported RHEL/CentOS version! - ${::operatingsystemrelease}")  }
+        /^8.*$/:
+        {
+          $api_dependencies=['pyOpenSSL']
+          $windows_dependencies=[ 'python2-impacket', 'python2-winrm' ]
+          $base_repo = 'py3'
+        }
+        default: { fail("Unsupported RHEL/CentOS version! - ${facts['os']['release']['full']}")  }
       }
     }
     'Debian':
@@ -83,96 +60,60 @@ class saltstack::params {
       $api_dependencies=undef
       $windows_dependencies=[ 'python-impacket', 'python-winrm' ]
 
-      case $::operatingsystem
+      $python2_base_repo = 'apt'
+
+      case $facts['os']['name']
       {
         'Ubuntu':
         {
-          case $::operatingsystemrelease
+          case $facts['os']['release']['full']
           {
             /^14.*$/:
             {
-              $saltstack_repo_url_key_source= {
-                                                'latest' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/latest/SALTSTACK-GPG-KEY.pub',
-                                                '2018.3' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2018.3/SALTSTACK-GPG-KEY.pub',
-                                                '2017.7' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2017.7/SALTSTACK-GPG-KEY.pub',
-                                                '2016.11' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2016.11/SALTSTACK-GPG-KEY.pub',
-                                                '2016.3' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2016.3/SALTSTACK-GPG-KEY.pub',
-                                              }
-              $saltstack_repo_url = {
-                                      'latest' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/latest',
-                                      '2018.3' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2018.3',
-                                      '2017.7' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2017.7',
-                                      '2016.11' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2016.11',
-                                      '2016.3' => '://repo.saltstack.com/apt/ubuntu/14.04/amd64/2016.3',
-                                    }
+              $repo_path = 'ubuntu/14.04'
+              $base_repo = 'apt'
             }
             /^16.*$/:
             {
-              $saltstack_repo_url_key_source= {
-                                                'latest' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest/SALTSTACK-GPG-KEY.pub',
-                                                '2018.3' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2018.3/SALTSTACK-GPG-KEY.pub',
-                                                '2017.7' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2017.7/SALTSTACK-GPG-KEY.pub',
-                                                '2016.11' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2016.11/SALTSTACK-GPG-KEY.pub',
-                                                '2016.3' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2016.3/SALTSTACK-GPG-KEY.pub',
-                                              }
-              $saltstack_repo_url = {
-                                      'latest' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest',
-                                      '2018.3' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2018.3',
-                                      '2017.7' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2017.7',
-                                      '2016.11' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2016.11',
-                                      '2016.3' => '://repo.saltstack.com/apt/ubuntu/16.04/amd64/2016.3',
-                                    }
+              $repo_path = 'ubuntu/16.04'
+              $base_repo = 'apt'
             }
             /^18.*$/:
             {
-              $saltstack_repo_url_key_source= {
-                                                'latest' => '://repo.saltstack.com/apt/ubuntu/18.04/amd64/latest/SALTSTACK-GPG-KEY.pub',
-                                                '2018.3' => '://repo.saltstack.com/apt/ubuntu/18.04/amd64/2018.3/SALTSTACK-GPG-KEY.pub',
-                                                '2017.7' => '://repo.saltstack.com/apt/ubuntu/18.04/amd64/2017.7/SALTSTACK-GPG-KEY.pub',
-                                              }
-              $saltstack_repo_url = {
-                                      'latest' => '://repo.saltstack.com/py3/ubuntu/18.04/amd64/latest',
-                                      '2018.3' => '://repo.saltstack.com/apt/ubuntu/18.04/amd64/2018.3',
-                                      '2017.7' => '://repo.saltstack.com/apt/ubuntu/18.04/amd64/2017.7',
-                                    }
+              $repo_path = 'ubuntu/18.04'
+              $base_repo = 'apt'
             }
-            default: { fail("Unsupported Ubuntu version! - ${::operatingsystemrelease}")  }
+            /^20.*$/:
+            {
+              $repo_path = 'ubuntu/20.04'
+              $base_repo = 'py3'
+            }
+            default: { fail("Unsupported Ubuntu version! - ${facts['os']['release']['full']}")  }
           }
         }
-        'Debian': { fail('Unsupported')  }
-        default: { fail('Unsupported Debian flavour!')  }
-      }
-    }
-    'Suse':
-    {
-      $package_provider=undef
-      $saltstack_repo_name='systemsmanagement_saltstack_products'
-      $saltstack_repo_url_key=undef
-
-      case $::operatingsystem
-      {
-        'SLES':
+        'Debian':
         {
-          case $::operatingsystemrelease
+          case $facts['os']['release']['major']
           {
-            '11.3':
+            8:
             {
-              $saltstack_repo_url_key_source= undef
-              $saltstack_repo_url = {
-                                      'latest' => '://repo.saltstack.com/opensuse/SLE_11_SP3/systemsmanagement:saltstack:products.repo',
-                                    }
+              $repo_path = 'debian/8'
+              $base_repo = 'apt'
             }
-            '12.3':
+            9:
             {
-              $saltstack_repo_url_key_source= undef
-              $saltstack_repo_url = {
-                                      'latest' => '://repo.saltstack.com/opensuse/SLE_12_SP3/systemsmanagement:saltstack:products.repo',
-                                    }
+              $repo_path = 'debian/9'
+              $base_repo = 'apt'
             }
-            default: { fail("Unsupported SLES version! - ${::operatingsystemrelease}")  }
+            10:
+            {
+              $repo_path = 'debian/10'
+              $base_repo = 'py3'
+            }
+            default: { fail("Unsupported Debian version! - ${facts['os']['release']['full']}")  }
           }
         }
-        default: { fail("Unsupported SuSE version! - ${::operatingsystemrelease}")  }
+        default: { fail('Unsupported Debian flavour!')  }
       }
     }
     default: { fail('Unsupported OS!')  }

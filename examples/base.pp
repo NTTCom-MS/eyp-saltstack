@@ -1,5 +1,5 @@
 class { 'saltstack::minion':
-  master => '127.0.0.1'
+  master => '127.0.0.1',
 }
 
 class { 'saltstack::master': }
@@ -18,8 +18,8 @@ class { 'saltstack::api': }
 
 class { 'saltstack::syndic': }
 
-saltstack::master::key { $::fqdn:
-  status => 'accepted'
+saltstack::master::key { $facts['networking']['fqdn']:
+  status => 'accepted',
 }
 
 saltstack::master::acl { 'saltuser':

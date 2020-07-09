@@ -27,28 +27,29 @@ class saltstack::api(
                       $rest_timeout             = '7200',
                     ) inherits saltstack::params {
 
-  case $::osfamily
+  case $facts['os']['family']
   {
     'redhat':
     {
-      case $::operatingsystemrelease
+      case $facts['os']['release']['full']
       {
-        /^6.*$/: { fail("api is not unsupported for this OS - ${::osfamily}/${::operatingsystemrelease}") }
+        /^6.*$/: { fail("api is not unsupported for this OS - ${facts['os']['family']}/${facts['os']['release']['full']}") }
         /^7.*$/: { }
         default: { }
       }
     }
     'Debian':
     {
-      case $::operatingsystem
+      case $facts['os']['name']
       {
         'Ubuntu':
         {
-          case $::operatingsystemrelease
+          case $facts['os']['release']['full']
           {
-            /^14.*$/: { fail("api is not unsupported for this OS - ${::osfamily}/${::operatingsystemrelease}") }
+            /^14.*$/: { fail("api is not unsupported for this OS - ${facts['os']['family']}/${facts['os']['release']['full']}") }
             /^16.*$/: { }
             /^18.*$/: { }
+            /^20.*$/: { }
             default: { }
           }
         }
@@ -58,11 +59,11 @@ class saltstack::api(
     default: { }
   }
 
-  include ::saltstack::master
+  include saltstack::master
 
-  Class['::saltstack::master'] ->
-  class { '::saltstack::api::install': } ->
-  class { '::saltstack::api::config': } ~>
-  class { '::saltstack::api::service': } ->
-  Class['::saltstack::api']
+  Class['saltstack::master'] ->
+  class { 'saltstack::api::install': } ->
+  class { 'saltstack::api::config': } ~>
+  class { 'saltstack::api::service': } ->
+  Class['saltstack::api']
 }

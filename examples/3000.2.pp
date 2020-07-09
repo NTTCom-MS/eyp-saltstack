@@ -1,5 +1,5 @@
 class { 'saltstack::repo':
-  version       => '2018.3',
+  version       => '3000',
   version_minor => '2',
 }
 

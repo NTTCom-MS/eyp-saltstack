@@ -1,5 +1,5 @@
 class { 'saltstack::repo':
-  version       => '2018.3',
+  version       => '3000',
   version_minor => '2',
 }
 
@@ -16,14 +16,6 @@ saltstack::master::fileroot { 'base':
 saltstack::master::pillar { 'base':
   files => [ '/srv/salt-data/pillar' ],
 }
-
-class { 'saltstack::cloud':
-  install_windows_dependencies => false,
-}
-
-class { 'saltstack::api': }
-
-class { 'saltstack::syndic': }
 
 saltstack::master::key { $facts['networking']['fqdn']:
   status => 'accepted',

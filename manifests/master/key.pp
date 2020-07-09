@@ -7,9 +7,9 @@ define saltstack::master::key (
                                 $hostname = $name,
                                 $status   = 'accepted',
                               ) {
-  include ::saltstack::master
+  include saltstack::master
 
-  Class['::saltstack::master'] -> Saltstack::Master::Key <| |>
+  Class['saltstack::master'] -> Saltstack::Master::Key <| |>
 
   $current_status = salt_key_status($hostname)
 

@@ -14,26 +14,26 @@ class saltstack::cloud(
                         $install_vsphere_dependencies = true,
                       ) inherits saltstack::params {
 
-  case $::osfamily
+  case $facts['os']['family']
   {
     'redhat':
     {
-      case $::operatingsystemrelease
+      case $facts['os']['release']['full']
       {
-        /^6.*$/: { fail("cloud is not unsupported for this OS - ${::osfamily}/${::operatingsystemrelease}") }
+        /^6.*$/: { fail("cloud is not unsupported for this OS - ${facts['os']['family']}/${facts['os']['release']['full']}") }
         /^7.*$/: { }
         default: { }
       }
     }
     'Debian':
     {
-      case $::operatingsystem
+      case $facts['os']['name']
       {
         'Ubuntu':
         {
-          case $::operatingsystemrelease
+          case $facts['os']['release']['full']
           {
-            /^14.*$/: { fail("cloud is not unsupported for this OS - ${::osfamily}/${::operatingsystemrelease}") }
+            /^14.*$/: { fail("cloud is not unsupported for this OS - ${facts['os']['family']}/${facts['os']['release']['full']}") }
             /^16.*$/: { }
             /^18.*$/: { }
             default: { }
@@ -45,10 +45,10 @@ class saltstack::cloud(
     default: { }
   }
 
-  include ::saltstack::master
+  include saltstack::master
 
-  Class['::saltstack::master'] ->
-  class { '::saltstack::cloud::install': } ->
-  class { '::saltstack::cloud::config': } ->
-  Class['::saltstack::cloud']
+  Class['saltstack::master'] ->
+  class { 'saltstack::cloud::install': } ->
+  class { 'saltstack::cloud::config': } ->
+  Class['saltstack::cloud']
 }
