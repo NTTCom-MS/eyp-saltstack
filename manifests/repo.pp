@@ -4,8 +4,8 @@ class saltstack::repo (
                         $version_minor  = undef,
                         $protocol       = 'https',
                         $python_version = undef,
-                        $salt_repo_url  = 'repo.saltstack.com'
-
+                        $salt_repo_url  = 'repo.saltstack.com',
+                        $gpg_key        = 'SALTSTACK-GPG-KEY.pub'
                       ) inherits saltstack::params {
 
   Exec {
@@ -72,7 +72,7 @@ class saltstack::repo (
         descr    => "SaltStack repo - ${version} ${version_minor}",
         enabled  => '1',
         gpgcheck => '1',
-        gpgkey   => "${protocol}://${salt_repo_url}/yum/redhat/\$releasever/\$basearch/${composite_version}/SALTSTACK-GPG-KEY.pub",
+        gpgkey   => "${protocol}://${salt_repo_url}/yum/redhat/\$releasever/\$basearch/${composite_version}/${gpg_key}",
       }
     }
     'Debian':
