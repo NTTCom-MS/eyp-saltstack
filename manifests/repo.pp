@@ -72,7 +72,7 @@ class saltstack::repo (
         descr    => "SaltStack repo - ${version} ${version_minor}",
         enabled  => '1',
         gpgcheck => '1',
-        gpgkey   => "${protocol}://${salt_repo_url}/yum/redhat/\$releasever/\$basearch/${composite_version}/${gpg_key}",
+        gpgkey   => "${protocol}://${salt_repo_url}/${base_yum_repo}/redhat/\$releasever/\$basearch/${composite_version}/${gpg_key}",
       }
     }
     'Debian':
