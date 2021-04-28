@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.3
+ 
+* bugfix repo GPG key for RHEL8
+
 ## 0.2.0
 
 * INCOMPATIBLE CHANGE:
