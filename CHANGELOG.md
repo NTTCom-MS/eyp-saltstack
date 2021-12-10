@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.5
+
+* Adding saltstack::repo::salt_repo_url support for Debian based
+
 ## 0.2.4
 
 * fix for RHEL repository URL to get major version from facts as Salstack removed the folders $(majorrelease)Server
