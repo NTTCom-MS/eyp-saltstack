@@ -6,6 +6,7 @@ class saltstack::repo (
                         $python_version = undef,
                         $salt_repo_url  = 'repo.saltstack.com',
                         $gpg_key        = 'SALTSTACK-GPG-KEY.pub'
+			$base_yum_repo  = 'py'
                       ) inherits saltstack::params {
 
   Exec {
@@ -22,38 +23,40 @@ class saltstack::repo (
     $composite_version = $version
   }
 
-  if($python_version==undef)
-  {
-      if ($version == 'latest')
-      {
-        $base_yum_repo = 'py3'
-      }
-      elsif versioncmp($version, '3000') > 0
-      {
-        $base_yum_repo = 'py3'
-      }
-      else
-      {
-        $base_yum_repo = $saltstack::params::base_repo
-      }
-  }
-  else
-  {
-    case $python_version
-    {
-      2:
-      {
-        $base_yum_repo = $saltstack::params::python2_base_repo
-      }
-      3:
-      {
-        $base_yum_repo = 'py3'
-      }
-      default:
-      {
-        fail("Unsupported python version; python_version can be either 2 or 3 - not ${python_version}")
-      }
-    }
+  if($base_yum_repo == 'py')
+     if($python_version==undef)
+     {
+         if ($version == 'latest')
+         {
+           $base_yum_repo = 'py3'
+         }
+         elsif versioncmp($version, '3000') > 0
+         {
+           $base_yum_repo = 'py3'
+         }
+         else
+         {
+           $base_yum_repo = $saltstack::params::base_repo
+         }
+     }
+     else
+     {
+       case $python_version
+       {
+         2:
+         {
+           $base_yum_repo = $saltstack::params::python2_base_repo
+         }
+         3:
+         {
+           $base_yum_repo = 'py3'
+         }
+         default:
+         {
+           fail("Unsupported python version; python_version can be either 2 or 3 - not ${python_version}")
+         }
+       }
+     }
   }
 
   case $facts['os']['family']
