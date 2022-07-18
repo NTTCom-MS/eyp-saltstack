@@ -60,7 +60,7 @@ class saltstack::repo (
      }
   }
   else
-  }
+  {
     $base_yum_repo = $base_rep
   }
 
