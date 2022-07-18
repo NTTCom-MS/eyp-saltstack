@@ -5,7 +5,7 @@ class saltstack::repo (
                         $protocol       = 'https',
                         $python_version = undef,
                         $salt_repo_url  = 'repo.saltstack.com',
-                        $gpg_key        = 'SALTSTACK-GPG-KEY.pub'
+                        $gpg_key        = 'SALTSTACK-GPG-KEY.pub',
 			$base_yum_repo  = 'py'
                       ) inherits saltstack::params {
 
@@ -24,6 +24,7 @@ class saltstack::repo (
   }
 
   if($base_yum_repo == 'py')
+  {
      if($python_version==undef)
      {
          if ($version == 'latest')
