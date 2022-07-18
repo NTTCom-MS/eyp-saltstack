@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.6
+
+* Adding saltstack::repo::base_yum_repo support to define different base url
+
 ## 0.2.5
 
 * Adding saltstack::repo::salt_repo_url support for Debian based
