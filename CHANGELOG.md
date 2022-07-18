@@ -2,7 +2,7 @@
 
 ## 0.2.6
 
-* Adding saltstack::repo::base_yum_repo support to define different base url
+* Adding saltstack::repo::base_rep support to define different base url
 
 ## 0.2.5
 

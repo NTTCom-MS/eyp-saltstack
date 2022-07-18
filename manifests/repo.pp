@@ -6,7 +6,7 @@ class saltstack::repo (
                         $python_version = undef,
                         $salt_repo_url  = 'repo.saltstack.com',
                         $gpg_key        = 'SALTSTACK-GPG-KEY.pub',
-			$base_yum_repo  = 'py'
+			$base_rep       = 'py'
                       ) inherits saltstack::params {
 
   Exec {
@@ -23,7 +23,7 @@ class saltstack::repo (
     $composite_version = $version
   }
 
-  if($base_yum_repo == 'py')
+  if($base_rep == 'py')
   {
      if($python_version==undef)
      {
@@ -58,6 +58,10 @@ class saltstack::repo (
          }
        }
      }
+  }
+  else
+  }
+    $base_yum_repo = $base_rep
   }
 
   case $facts['os']['family']
